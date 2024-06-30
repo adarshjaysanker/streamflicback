@@ -1,12 +1,15 @@
 const {S3Client, PutObjectCommand} = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 
 const s3Client = new S3Client({
-    region: 'ap-south-1',
+    region: process.env.AWS_REGION,
     credentials: {
-        accessKeyId: 'AKIAQQWG4D6JE3U3KWFS',
-        secretAccessKey: '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'
+        accessKeyId: process.env.AWS_ACCESS_KEY,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
     }
 })
 
@@ -14,7 +17,7 @@ const uploadFileToS3 = async(file, key) => {
     const upload = new Upload({
         client: s3Client,
         params: {
-            Bucket: 'streamflic',
+            Bucket: process.env.AWS_BUCKET_NAME,
             Key: key,
             Body: file.buffer,
             ContentType: file.mimetype
