@@ -6,10 +6,10 @@ dotenv.config();
 
 
 const s3Client = new S3Client({
-    region: '',
+    region: process.env.AWS_REGION,
     credentials: {
-        accessKeyId: '',
-        secretAccessKey: ''
+        accessKeyId: process.env.AWS_ACCESS_KEY,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
     }
 })
 
