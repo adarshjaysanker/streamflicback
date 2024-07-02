@@ -37,6 +37,7 @@ const userController = {
     },
 
     signUp: async(req,res) => {
+        console.log(req.body);
         const {fullname, email, mobilenumber, password} = req.body;
         try{
            const hashedPassword = await bcrypt.hash(password, 10);
