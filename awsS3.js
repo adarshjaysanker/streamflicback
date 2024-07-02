@@ -1,15 +1,16 @@
 const {S3Client, PutObjectCommand} = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const dotenv = require('dotenv');
+const sse = require('./sse')
 
 dotenv.config();
 
 
 const s3Client = new S3Client({
-    region: process.env.AWS_REGION,
+    region: 'ap-south-1',
     credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+        accessKeyId: 'AKIAQQWG4D6JE3U3KWFS',
+        secretAccessKey: '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'
     }
 })
 
@@ -17,7 +18,7 @@ const uploadFileToS3 = async(file, key) => {
     const upload = new Upload({
         client: s3Client,
         params: {
-            Bucket: process.env.AWS_BUCKET_NAME,
+            Bucket: 'streamflic',
             Key: key,
             Body: file.buffer,
             ContentType: file.mimetype
@@ -25,6 +26,10 @@ const uploadFileToS3 = async(file, key) => {
         queueSize: 4,
         partSize: 5 * 1024 * 1024,
     });
+    upload.on('httpUploadProgress', (progress) => {
+        const percentCompleted = Math.round((progress.loaded * 100) / progress.total);
+        sse.send({[key]: percentCompleted});
+    })
     try{
        const result = await upload.done();
        return `https://d1vmg8nlfiebex.cloudfront.net/${key}` 

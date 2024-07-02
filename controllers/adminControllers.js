@@ -1,5 +1,6 @@
 const Video = require('../model/videos');
 const uploadFileToS3 = require('../awsS3');
+const sse = require('../sse')
 
 
 
@@ -10,10 +11,20 @@ const userController = {
        try{
         const {title, releaseYear, quality, speciality, duration, description, category, genres, certifications, cast} = req.body;
 
-        const titleBannerUrl = req.files.titleBanner ? await uploadFileToS3(req.files.titleBanner[0], `${req.files.titleBanner[0].originalname}`) : null;
-        const infoBannerUrl = req.files.infoBanner ? await uploadFileToS3(req.files.infoBanner[0], `${req.files.infoBanner[0].originalname}`) : null;
-        const trailerVideoUrl = req.files.trailerVideo ? await uploadFileToS3(req.files.trailerVideo[0], `${req.files.trailerVideo[0].originalname}`) : null;
-        const movieVideoUrl = req.files.movieVideo ? await uploadFileToS3(req.files.movieVideo[0], `${req.files.movieVideo[0].originalname}`) : null;
+        const uploadFile = async(files, key) => {
+            if(!files || files.length === 0) return null;
+            sse.send({[key]: 0});
+            const file = files[0]
+            const result = await uploadFileToS3(file, `${file.originalname}`);
+            sse.send({[key]: 100});
+            return result
+        }
+
+        const titleBannerUrl = await uploadFile(req.files.titleBanner, 'titleBanner')
+        const infoBannerUrl = await uploadFile(req.files.infoBanner, 'infoBanner')
+        const trailerVideoUrl = await uploadFile(req.files.trailerVideo, 'trailerVideo')
+        const movieVideoUrl = await uploadFile(req.files.movieVideo, 'movieVideo');
+        sse.send({database: 0});
         console.log(movieVideoUrl);
         const newVideo = new Video({
             title: title,
@@ -32,7 +43,10 @@ const userController = {
             movieVideo: movieVideoUrl,
         });
         const savedNewVideo = await newVideo.save();
+
+        console.log(savedNewVideo, 'saved');
       
+        sse.send({database: 100});
         res.status(200).json({message: 'Video Added Successfully', savedNewVideo});
        }catch(error){
          console.log(error);
