@@ -75,6 +75,17 @@ const userController = {
 
     getHome: async(req,res) => {
         res.json({message: 'welcome to home page'});
+    },
+
+    getRandomMovie: async(req,res) => {
+        try{
+           const count = await Videos.countDocuments();
+           const random = Math.floor(Math.random() * count);
+           const randomMovie = await Videos.findOne().skip(random);
+           res.json({movie: randomMovie});
+        }catch(error){
+            res.status(500).json({error: 'An error occured while fetching the random movie'});
+        }
     }
 
     
