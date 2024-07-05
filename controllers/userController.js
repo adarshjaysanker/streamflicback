@@ -8,7 +8,7 @@ const userController = {
 
     exploreAllVideos: async(req,res) => {
         try{
-            const allVideos = await Videos.find();
+            const allVideos = await Videos.find().sort({createdAt: -1});
             const categorizedVideos = allVideos.reduce((acc, video) => {
                 if(!acc[video.category]){
                     acc[video.category] = [];
